@@ -1,0 +1,22 @@
+html {
+    font-size: 1rem;
+}
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; 
+    line-height: 1.4;
+    background-color: #fffce8;
+}
+.container {
+    max-width: 100ch;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+pre {
+    background-color: #4b474a;
+    color: white;
+    border-radius: 10px;
+    font-size: 0.8rem;
+}

@@ -3,27 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script> 
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>    
     <title>RichTools | ML.c</title>
 </head>
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box; 
-        line-height: 1.4;
-    }
-    .container {
-        max-width: 100ch;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    
-</style>
 <body>
     <div class="container">
         <a href="/ml.html">back</a>
         <h1>Making a Neural Network in C</h1>
         <a href="https://github.com/RichTools/RichNN" target="_blank">See Code</a>
+        <hr />
+        <p>This is about the library</p>
+        <pre>
+            <code>
+                #include &lt;stdio.h&gt;
+                #include &lt;stdlib.h&gt;
+                #include &lt;math.h&gt;
+
+                #include "richnn.h"
+
+                NeuralNet *nn = {0};
+            </code>
+        </pre>
+        <p>$$\begin{align} 
+            y^{(1)} = WX + b \\
+            a^{(1)} = \sigma(y^{(1)}) \\
+        \end{align}$$</p>
     </div>
 </body> 
 </html>
