@@ -175,7 +175,7 @@
         </code>
         </pre>
 
-        <h2>3. Forward Pass</h2>
+        <h2>3 Forward Pass</h2>
         <p>The forward pass is the process of passing input data through the network to obtain an output. This involves multiplying the input by the weights, adding the biases, and applying the activation function at each layer.</p>
         <p>The forward pass gives us a set of activations for each layer, along with z values, which are then used in the subsequent layers and during backpropagation.</p>
         <p>Activations are values from the neuron after passing the computation through the activation function, and Z values are the weighted inputs before activation.</p>
@@ -229,7 +229,7 @@
         </code>
         </pre>
 
-        <h2>4. Cost Function</h2>
+        <h2>4 Cost Function</h2>
         <p>The cost function measures how well the neural network is performing. In RichNN, I have implemented the Mean Squared Error (MSE) cost function.</p>
         <p>The cost function tells us how well the network is performing for a given set of inputs and expected outputs.</p>
         <p>I only really use this for reporting the training loss, but in the early stages I used it for finite differences to estimate gradients.</p>
@@ -266,7 +266,7 @@
         </code>
         </pre>
 
-        <h2>5. Computing Gradients</h2>
+        <h2>5 Computing Gradients</h2>
         <p>To train the neural network, we need to compute the gradients of the cost function with respect to the weights and biases. This is needed for the gradient descent optimisation algorithm.</p>
         <p>For a quick review, gradient decent is an algorithm for updating the weights and biases of the network in order to drive to a minimum of the cost function.</p>
         <p>Since neural networks are trained by minimising the cost, the negative of the gradient tells us which direction to move the parameters to reach a local minimum. Intuitively, the gradient points in the direction of steepest ascent, so moving in the opposite direction reduces the cost.</p>
