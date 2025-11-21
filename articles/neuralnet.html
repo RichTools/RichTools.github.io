@@ -16,22 +16,161 @@
         <h1>Making a Neural Network in C</h1>
         <a href="https://github.com/RichTools/RichNN" target="_blank">See Code</a>
         <hr />
-        <p>This is about the library</p>
-        <pre>
-            <code>
-                #include &lt;stdio.h&gt;
-                #include &lt;stdlib.h&gt;
-                #include &lt;math.h&gt;
+        <p>RichNN is a really bare minimum library for training neural networks. It is in fact so bare minimum that it is almost inconvenient to use for anything but the simplest tasks.</p>
 
-                #include "richnn.h"
+        <p>You can create a network using the following code snippet taken from the `Xor.c` example.</p>
+        <pre class="prettyprint">
+        <code class="lang-c">
+        int layer_sizes[] = {2, 4, 1};
+        int layer_count = sizeof(layer_sizes) / sizeof(layer_sizes[0]);
+        int individual_example_inputs = 2;
+        int OUT_DIM = 1;
 
-                NeuralNet *nn = {0};
-            </code>
+        float inputs[][2] = {{0,0}, {0,1}, {1,0}, {1,1}};
+        float outputs[][1] = {{0}, {1}, {1}, {0}};
+
+        int train_count = 4;
+
+        NeuralNetwork* XorNetwork = (NeuralNetwork*)malloc(sizeof(NeuralNetwork));
+        init_network(XorNetwork, layer_sizes, layer_count, individual_example_inputs, train_count);
+
+        NeuralNetwork* gradients = (NeuralNetwork*)malloc(sizeof(NeuralNetwork));
+        init_network(gradients, layer_sizes, layer_count, individual_example_inputs, train_count);
+        </code>
         </pre>
+        
+        <p>This creates a network with 2 input neurons, one hidden layer with 4 neurons and one output neuron. The network is then trained on the XOR dataset.</p>
+        <p>In XOR the aim is to replicate the outputs of an XOR gate.</p>
+
+        <h2>Training Loop</h2>
+        <pre class="prettyprint">
+        <code class="lang-c">
+        float rate = 0.5f;
+        int iterations = 10000;
+            
+        for (int iter = 0; iter < iterations; ++iter) 
+        {
+            for (int j=0; j < train_count; ++j)
+            { 
+                float single_input[2]={ 
+                    inputs[j][0], inputs[j][1]
+                };
+
+                float single_output[1]= { outputs[j][0] }; 
+
+                // Forward pass
+                Tensor2D* output = forward(
+                    XorNetwork, single_input, individual_example_inputs, 
+                    sigmoid
+                );
+
+                // Backward pass
+                delta_L = backpropagation(
+                    XorNetwork, gradients, 
+                    &single_input, single_output); 
+            } 
+            // Update weights and biases
+            batch_gradient_descent(XorNetwork, gradients, rate); 
+
+            if (iter % 100 == 0)
+            {
+                float current_cost = cost(
+                    XorNetwork, individual_example_inputs,
+                    OUT_DIM, inputs, outputs[0]
+                );
+                printf("Epoch %d / %d | Cost = %f\n", iter, iterations, current_cost);
+            }
+        }
+        </code>
+        </pre>
+
+        
+        <h2>Backpropagation</h2>
+        <p>Based on the 4 fundamental equations of backpropagation: <a href="http://neuralnetworksanddeeplearning.com/chap2.html">see article here</a></p>
+
         <p>$$\begin{align} 
-            y^{(1)} = WX + b \\
-            a^{(1)} = \sigma(y^{(1)}) \\
+            \delta^L & = \nabla_a C \odot \sigma'(z^L) \\
+            \delta^L & = ((w^{l+1})^{\top} \delta^{l+1}) \odot \sigma'(z^L) \\
+            \frac{\partial C}{\partial b_j^l} &= \delta_j^l \\
+            \frac{\partial C}{\partial w_{j k}^l} &= a_k^{l-1} \delta_j^l
         \end{align}$$</p>
+
+
+        <pre class="prettyprint">
+        <code class="lang-c">
+        Tensor2D* backpropagation(NeuralNetwork* model, NeuralNetwork* gradients,
+            float inputs[][model->sample_size], float outputs[])
+        {
+            int L = model->layer_count;
+            int output_size = model->layers[L - 1]->size;
+            
+            // 1. Compute δ_L = (a_L – y) ⊙ σ′(z_L)
+            Tensor2D* aL = model->activations[L - 1];
+            Tensor2D* zL = model->zs[L - 1];
+            
+            // build y vector
+            Tensor2D* y = Tensor_init(output_size, 1);
+            for (int i = 0; i < output_size; i++) 
+                TENSOR_AT(y, i, 0)=outputs[i]; Tensor2D* diff=Tensor_sub(aL, y); // (a_L - y)
+
+            Tensor2D* sigpL=Tensor_sigmoid_prime(zL); // σ′(z_L)
+            Tensor2D* delta=Tensor_hadamard(diff, sigpL); // δ_L Tensor2D*
+            d_final=Tensor_copy(delta); // store δ_L to returning 
+            // Store grads for output layer 
+            Tensor2D* a_prev=model->activations[L - 2];
+            Tensor2D* a_prev_T = Tensor_transpose(a_prev);
+            
+            Tensor2D* dW_L = Tensor_mul(delta, a_prev_T); // ∇W_L
+            
+            for (int i = 0; i < gradients->layers[L-1]->weights->rows; i++)
+            {
+                for (int j = 0; j < gradients->layers[L-1]->weights->cols; j++)
+                { 
+                    TENSOR_AT(gradients->layers[L-1]->weights, i, j) += TENSOR_AT(dW_L, i, j);
+                }
+            }
+            for (int i = 0; i < gradients->layers[L-1]->bias->rows; i++)
+            {
+                TENSOR_AT(gradients->layers[L-1]->bias, i, 0) += TENSOR_AT(delta, i, 0);
+            }
+            
+            // 2. Backpropagate through hidden layers: δ_l = (W_(l+1)^T δ_(l+1)) ⊙ σ′(z_l)
+            Tensor2D* delta_next = delta;
+            
+            for (int l = L - 2; l >= 1; l--)
+            {
+                Tensor2D* W_next = model->layers[l + 1]->weights;
+                Tensor2D* W_next_T = Tensor_transpose(W_next);
+            
+                Tensor2D* tmp = Tensor_mul(W_next_T, delta_next); // W^T δ_(l+1)
+                Tensor2D* sigp = Tensor_sigmoid_prime(model->zs[l]);
+            
+                Tensor2D* delta_l = Tensor_hadamard(tmp, sigp);
+            
+                // ∇W_l = δ_l * a_(l-1)^T
+                Tensor2D* a_prev_l_T = Tensor_transpose(model->activations[l - 1]);
+                Tensor2D* dW_l = Tensor_mul(delta_l, a_prev_l_T);
+            
+                for (int i = 0; i < gradients->layers[l]->weights->rows; i++)
+                {
+                    for (int j = 0; j < gradients->layers[l]->weights->cols; j++)
+                    {
+                        TENSOR_AT(gradients->layers[l]->weights, i, j) += TENSOR_AT(dW_l, i, j);
+                    }
+                }
+                for (int i = 0; i < gradients->layers[l]->bias->rows; i++)
+                {
+                    TENSOR_AT(gradients->layers[l]->bias, i, 0) += TENSOR_AT(delta_l, i, 0);
+                }
+            
+                if (l != L - 2) Tensor_free(delta_next);
+            
+                delta_next = delta_l;
+            }    
+            return d_final;
+        }
+        </pre>
     </div>
 </body> 
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
 </html>

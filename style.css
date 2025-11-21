@@ -14,9 +14,70 @@ body {
     padding: 20px;
 }
 
+pre.prettyprint { 
+    display: block; 
+    background-color: #fdf6e3; /* light cream background */
+    color: #333; /* default text color */
+}
+
+pre .nocode { 
+    background-color: none; 
+    color: #000; 
+}
+
+pre .str { 
+    color: #d14; /* dark red / pinkish for strings */
+} 
+
+pre .kwd { 
+    color: #008080; /* teal for keywords */ 
+    font-weight: bold; 
+}
+
+pre .com { 
+    color: #93a1a1; /* grayish-blue for comments */ 
+    font-style: italic;
+} 
+
+pre .typ { 
+    color: #268bd2; /* blue for types */ 
+} 
+
+pre .lit { 
+    color: #b58900; /* goldenrod / dark yellow for literals */ 
+} 
+
+pre .pun { 
+    color: #586e75; /* dark gray for punctuation */ 
+} 
+
+pre .pln { 
+    color: #333; /* dark text for plain text */ 
+} 
+
+pre .tag { 
+    color: #b58900; /* orange/gold for tags */ 
+    font-weight: bold; 
+} 
+
+pre .atn { 
+    color: #2aa198; /* cyan/teal for attribute names */ 
+    font-weight: bold; 
+} 
+
+pre .atv { 
+    color: #d14; /* same as string color for attribute values */ 
+} 
+
+pre .dec { 
+    color: #b58900; /* dark yellow for numbers / decimals */ 
+} 
+
+
+
 pre {
-    background-color: #4b474a;
-    color: white;
+    /* background-color: #c6bec4; */
+    /* color: white; */
     border-radius: 10px;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
 }
